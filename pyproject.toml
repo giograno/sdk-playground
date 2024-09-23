@@ -1,0 +1,15 @@
+[project]
+name = "localstack-client"
+readme = "README.md"
+description = "Python client for LocalStack"
+authors = [
+        { name = "LocalStack Team", email = "info@localstack.cloud"}
+]
+version = "0.1"
+
+# todo: proper split dependencies
+dependencies = [
+    "localstack-core>=3.7.3.dev41,<3.8",
+    "localstack-core[dev]>=3.7.3.dev41,<3.8",
+    "localstack-ext>=3.7.3.dev,<3.8",
+]
