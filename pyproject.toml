@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "localstack-client"
+name = "localstack-sdk"
 readme = "README.md"
-description = "Python client for LocalStack"
+description = "Python SDK for LocalStack"
 authors = [
         { name = "LocalStack Team", email = "info@localstack.cloud"}
 ]
@@ -17,3 +21,17 @@ dependencies = [
     "pydantic>=2",
     "typing-extensions>=4.7.1"
 ]
+
+[tool.setuptools]
+include-package-data = false
+
+package-dir = { "" = "localstack-sdk"}
+
+[tool.setuptools.dynamic]
+readme = { file = ["README.md"], content-type = "text/markdown"}
+
+[tool.setuptools.packages.find]
+where = ["localstack-sdk/"]
+include = ["localstack*"]
+exclude = ["tests*"]
+
