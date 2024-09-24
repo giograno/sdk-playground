@@ -16,6 +16,7 @@ build-spec:			## build the entire localstack api spec (openapi.yaml in the root 
 
 clean:          	## Clean up
 	rm -rf $(VENV_DIR)
-	rm -rf build/
+	rm -rf localstack-sdk/generated/api			# cleanup generated apis
+	rm -rf localstack-sdk/generated/models		# cleanup generated models
 
 .PHONY: venv clean
