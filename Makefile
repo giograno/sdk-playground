@@ -18,7 +18,9 @@ clean: clean-generated         	## Clean up
 	rm -rf $(VENV_DIR)
 
 clean-generated:	## Cleanup generated code
-	rm -rf localstack-sdk/localstack/generated/api			# cleanup generated apis
-	rm -rf localstack-sdk/localstack/generated/models		# cleanup generated models
+	rm -rf localstack-sdk/localstack/generated/api/*.py
+	rm -rf localstack-sdk/localstack/generated/models/*.py
+	touch localstack-sdk/localstack/generated/api/__init__.py
+	touch localstack-sdk/localstack/generated/models/__init__.py
 
 .PHONY: venv clean
