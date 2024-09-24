@@ -7,9 +7,13 @@ authors = [
 ]
 version = "0.1"
 
-# todo: proper split dependencies
+# todo: proper split dependencies (there look like dev dependencies, since they are only used to generate the yaml file
 dependencies = [
     "localstack-core>=3.7.3.dev41,<3.8",
     "localstack-core[dev]>=3.7.3.dev41,<3.8",
     "localstack-ext>=3.7.3.dev,<3.8",
+    "urllib3>=1.25.3",
+    "python-dateutil>=2.8.2",
+    "pydantic>=2",
+    "typing-extensions>=4.7.1"
 ]
