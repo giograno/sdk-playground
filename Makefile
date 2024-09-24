@@ -1,6 +1,9 @@
 VENV_CMD ?= python3 -m venv
 VENV_DIR ?= .venv
 VENV_RUN = . $(VENV_DIR)/bin/activate
+TEST_PATH ?= .
+TEST_EXEC ?= python -m
+PYTEST_LOGLEVEL ?= warning
 PIP_CMD ?= pip
 
 $(VENV_ACTIVATE): pyproject.toml
@@ -22,5 +25,8 @@ clean-generated:	## Cleanup generated code
 	rm -rf localstack-sdk/localstack/generated/models/*.py
 	touch localstack-sdk/localstack/generated/api/__init__.py
 	touch localstack-sdk/localstack/generated/models/__init__.py
+
+test:              		  ## Run automated tests
+	($(VENV_RUN); $(TEST_EXEC) pytest --durations=10 --log-cli-level=$(PYTEST_LOGLEVEL) $(PYTEST_ARGS) $(TEST_PATH))
 
 .PHONY: venv clean

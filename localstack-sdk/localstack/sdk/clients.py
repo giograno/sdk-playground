@@ -16,7 +16,11 @@ class LocalStackClient():
     def delete_ddb_items(self):
         with localstack.generated.ApiClient(self.configuration) as client:
             api_instance = localstack.generated.AwsApi(client)
-            resp = api_instance.delete_ddb_expired_items
+            resp = api_instance.delete_ddb_expired_items()
             return resp
 
-
+    def get_health(self):
+        with localstack.generated.ApiClient(self.configuration) as client:
+            api_instance = localstack.generated.LocalstackApi(client)
+            resp = api_instance.get_features_and_services()
+            return resp

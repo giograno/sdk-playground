@@ -1,16 +1,12 @@
 #!/bin/bash
 
-
-# todo: add package name
-# todo: pick only one between normal method, without preloaded content, with_http_info
-
 # supportingFiles generates stuff like:
 #   - api_client.py
 #   - api_response.py
 #   - configuration.py
 #   - exceptions.py
 #   - rest.py
-# we can decide to move these outside the generated package and work on them manually.
+# we can decide to move these outside the generated package and work on them manually. The code there is
 
 docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate \
     -i /local/openapi.yaml \
@@ -21,4 +17,4 @@ docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate \
     -p packageName=localstack.generated \
     --template-dir /local/templates \
     --global-property apiTests=false,modelTests=false \
-#    --global-property apiDocs=false
+    --global-property apiDocs=false,modelDocs=False
