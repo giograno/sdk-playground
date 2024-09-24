@@ -14,9 +14,11 @@ venv: $(VENV_ACTIVATE)    ## Create a new (empty) virtual environment
 build-spec:			## build the entire localstack api spec (openapi.yaml in the root folder)
 	$(VENV_RUN); python scripts/create_spec.py
 
-clean:          	## Clean up
+clean: clean-generated         	## Clean up
 	rm -rf $(VENV_DIR)
-	rm -rf localstack-sdk/generated/api			# cleanup generated apis
-	rm -rf localstack-sdk/generated/models		# cleanup generated models
+
+clean-generated:	## Cleanup generated code
+	rm -rf localstack-sdk/localstack/generated/api			# cleanup generated apis
+	rm -rf localstack-sdk/localstack/generated/models		# cleanup generated models
 
 .PHONY: venv clean
