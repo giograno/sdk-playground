@@ -18,18 +18,25 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GetDiagnostics200ResponseVersionHost(BaseModel):
+class CloudPodEvent(BaseModel):
     """
-    GetDiagnostics200ResponseVersionHost
+    A generic cloud pod event.
     """ # noqa: E501
-    kernel: StrictStr
-    additional_properties: Dict[str, Any] = {}
-    __properties: ClassVar[List[str]] = ["kernel"]
+    event: StrictStr = Field(description="The type of event.")
+    message: StrictStr = Field(description="A message attached to the event.")
+    __properties: ClassVar[List[str]] = ["event", "message"]
+
+    @field_validator('event')
+    def event_validate_enum(cls, value):
+        """Validates the enum"""
+        if value not in set(['log', 'service', 'error', 'completion']):
+            raise ValueError("must be one of enum values ('log', 'service', 'error', 'completion')")
+        return value
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +56,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a JSON string"""
+        """Create an instance of CloudPodEvent from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -61,10 +68,8 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
         * `None` is only added to the output dict for nullable fields that
           were set at model initialization. Other fields with value `None`
           are ignored.
-        * Fields in `self.additional_properties` are added to the output dict.
         """
         excluded_fields: Set[str] = set([
-            "additional_properties",
         ])
 
         _dict = self.model_dump(
@@ -72,16 +77,11 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # puts key-value pairs in additional_properties in the top level
-        if self.additional_properties is not None:
-            for _key, _value in self.additional_properties.items():
-                _dict[_key] = _value
-
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a dict"""
+        """Create an instance of CloudPodEvent from a dict"""
         if obj is None:
             return None
 
@@ -89,13 +89,9 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "kernel": obj.get("kernel")
+            "event": obj.get("event"),
+            "message": obj.get("message")
         })
-        # store additional fields in additional_properties
-        for _key in obj.keys():
-            if _key not in cls.__properties:
-                _obj.additional_properties[_key] = obj.get(_key)
-
         return _obj
 
 

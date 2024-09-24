@@ -18,18 +18,25 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr
-from typing import Any, ClassVar, Dict, List
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GetDiagnostics200ResponseVersionHost(BaseModel):
+class GetPodVersions200ResponseVersionsInner(BaseModel):
     """
-    GetDiagnostics200ResponseVersionHost
+    GetPodVersions200ResponseVersionsInner
     """ # noqa: E501
-    kernel: StrictStr
-    additional_properties: Dict[str, Any] = {}
-    __properties: ClassVar[List[str]] = ["kernel"]
+    created_at: Optional[StrictInt] = Field(default=None, description="Timestamp when the version was created.")
+    deleted: Optional[StrictStr] = Field(default=None, description="Deletion timestamp or null if not deleted.")
+    description: Optional[StrictStr] = Field(default=None, description="Description of the version.")
+    localstack_version: Optional[StrictStr] = Field(default=None, description="Version of LocalStack used.")
+    services: Optional[List[StrictStr]] = Field(default=None, description="List of services associated with this version.")
+    storage_size: Optional[StrictInt] = Field(default=None, description="Size of storage used by this version.")
+    user: Optional[StrictStr] = Field(default=None, description="User associated with this version.")
+    user_id: Optional[StrictStr] = Field(default=None, description="ID of the user associated with this version.")
+    version: Optional[StrictInt] = Field(default=None, description="Version number.")
+    __properties: ClassVar[List[str]] = ["created_at", "deleted", "description", "localstack_version", "services", "storage_size", "user", "user_id", "version"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +56,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a JSON string"""
+        """Create an instance of GetPodVersions200ResponseVersionsInner from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -61,10 +68,8 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
         * `None` is only added to the output dict for nullable fields that
           were set at model initialization. Other fields with value `None`
           are ignored.
-        * Fields in `self.additional_properties` are added to the output dict.
         """
         excluded_fields: Set[str] = set([
-            "additional_properties",
         ])
 
         _dict = self.model_dump(
@@ -72,16 +77,11 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # puts key-value pairs in additional_properties in the top level
-        if self.additional_properties is not None:
-            for _key, _value in self.additional_properties.items():
-                _dict[_key] = _value
-
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a dict"""
+        """Create an instance of GetPodVersions200ResponseVersionsInner from a dict"""
         if obj is None:
             return None
 
@@ -89,13 +89,16 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "kernel": obj.get("kernel")
+            "created_at": obj.get("created_at"),
+            "deleted": obj.get("deleted"),
+            "description": obj.get("description"),
+            "localstack_version": obj.get("localstack_version"),
+            "services": obj.get("services"),
+            "storage_size": obj.get("storage_size"),
+            "user": obj.get("user"),
+            "user_id": obj.get("user_id"),
+            "version": obj.get("version")
         })
-        # store additional fields in additional_properties
-        for _key in obj.keys():
-            if _key not in cls.__properties:
-                _obj.additional_properties[_key] = obj.get(_key)
-
         return _obj
 
 

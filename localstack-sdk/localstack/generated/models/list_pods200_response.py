@@ -18,18 +18,19 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict
 from typing import Any, ClassVar, Dict, List
+from localstack.generated.models.list_pods200_response_cloudpods_inner import ListPods200ResponseCloudpodsInner
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GetDiagnostics200ResponseVersionHost(BaseModel):
+class ListPods200Response(BaseModel):
     """
-    GetDiagnostics200ResponseVersionHost
+    ListPods200Response
     """ # noqa: E501
-    kernel: StrictStr
+    cloudpods: List[ListPods200ResponseCloudpodsInner]
     additional_properties: Dict[str, Any] = {}
-    __properties: ClassVar[List[str]] = ["kernel"]
+    __properties: ClassVar[List[str]] = ["cloudpods"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +50,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a JSON string"""
+        """Create an instance of ListPods200Response from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -72,6 +73,13 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of each item in cloudpods (list)
+        _items = []
+        if self.cloudpods:
+            for _item_cloudpods in self.cloudpods:
+                if _item_cloudpods:
+                    _items.append(_item_cloudpods.to_dict())
+            _dict['cloudpods'] = _items
         # puts key-value pairs in additional_properties in the top level
         if self.additional_properties is not None:
             for _key, _value in self.additional_properties.items():
@@ -81,7 +89,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a dict"""
+        """Create an instance of ListPods200Response from a dict"""
         if obj is None:
             return None
 
@@ -89,7 +97,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "kernel": obj.get("kernel")
+            "cloudpods": [ListPods200ResponseCloudpodsInner.from_dict(_item) for _item in obj["cloudpods"]] if obj.get("cloudpods") is not None else None
         })
         # store additional fields in additional_properties
         for _key in obj.keys():

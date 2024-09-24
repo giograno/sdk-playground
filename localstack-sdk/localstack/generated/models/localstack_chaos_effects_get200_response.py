@@ -18,18 +18,19 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List
+from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GetDiagnostics200ResponseVersionHost(BaseModel):
+class LocalstackChaosEffectsGet200Response(BaseModel):
     """
-    GetDiagnostics200ResponseVersionHost
+    Configuration for network effects.
     """ # noqa: E501
-    kernel: StrictStr
+    latency: Annotated[int, Field(strict=True, ge=0)] = Field(description="Network latency in milliseconds. By default, 0 is used.")
     additional_properties: Dict[str, Any] = {}
-    __properties: ClassVar[List[str]] = ["kernel"]
+    __properties: ClassVar[List[str]] = ["latency"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +50,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a JSON string"""
+        """Create an instance of LocalstackChaosEffectsGet200Response from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -81,7 +82,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a dict"""
+        """Create an instance of LocalstackChaosEffectsGet200Response from a dict"""
         if obj is None:
             return None
 
@@ -89,7 +90,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "kernel": obj.get("kernel")
+            "latency": obj.get("latency")
         })
         # store additional fields in additional_properties
         for _key in obj.keys():

@@ -23,13 +23,14 @@ from typing import Any, ClassVar, Dict, List
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GetDiagnostics200ResponseVersionHost(BaseModel):
+class ListPods200ResponseCloudpodsInner(BaseModel):
     """
-    GetDiagnostics200ResponseVersionHost
+    ListPods200ResponseCloudpodsInner
     """ # noqa: E501
-    kernel: StrictStr
+    max_version: StrictStr
+    pod_name: StrictStr
     additional_properties: Dict[str, Any] = {}
-    __properties: ClassVar[List[str]] = ["kernel"]
+    __properties: ClassVar[List[str]] = ["max_version", "pod_name"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +50,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a JSON string"""
+        """Create an instance of ListPods200ResponseCloudpodsInner from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -81,7 +82,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a dict"""
+        """Create an instance of ListPods200ResponseCloudpodsInner from a dict"""
         if obj is None:
             return None
 
@@ -89,7 +90,8 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "kernel": obj.get("kernel")
+            "max_version": obj.get("max_version"),
+            "pod_name": obj.get("pod_name")
         })
         # store additional fields in additional_properties
         for _key in obj.keys():

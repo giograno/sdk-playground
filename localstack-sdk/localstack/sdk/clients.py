@@ -1,10 +1,16 @@
 import localstack.generated
 from localstack.generated import Configuration
+import os
+
 
 class PodClient:
 
-    def __init__(self):
-        pass
+    def __init__(self, auth_token: str | None = None, host: str = "http://localhost.localstack.cloud:4566"):
+        self.auth_token = auth_token or os.getenv("LOCALSTACK_AUTH_TOKEN")
+        self.host = host
+        assert auth_token
+
+
 
 
 class LocalStackClient():

@@ -18,18 +18,29 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GetDiagnostics200ResponseVersionHost(BaseModel):
+class LocalstackStackinfoGet200Response(BaseModel):
     """
-    GetDiagnostics200ResponseVersionHost
+    LocalstackStackinfoGet200Response
     """ # noqa: E501
-    kernel: StrictStr
+    api_key: StrictStr
+    duration_in_seconds: StrictInt
+    is_ci: StrictBool
+    is_docker: StrictBool
+    number_of_api_calls_error: StrictInt
+    number_of_api_calls_success: StrictInt
+    number_of_services: StrictInt
+    server_time_utc: StrictStr
+    session_id: StrictStr
+    system: StrictStr
+    top_user_agent: StrictStr
+    version: StrictStr
     additional_properties: Dict[str, Any] = {}
-    __properties: ClassVar[List[str]] = ["kernel"]
+    __properties: ClassVar[List[str]] = ["api_key", "duration_in_seconds", "is_ci", "is_docker", "number_of_api_calls_error", "number_of_api_calls_success", "number_of_services", "server_time_utc", "session_id", "system", "top_user_agent", "version"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +60,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a JSON string"""
+        """Create an instance of LocalstackStackinfoGet200Response from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -81,7 +92,7 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GetDiagnostics200ResponseVersionHost from a dict"""
+        """Create an instance of LocalstackStackinfoGet200Response from a dict"""
         if obj is None:
             return None
 
@@ -89,7 +100,18 @@ class GetDiagnostics200ResponseVersionHost(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "kernel": obj.get("kernel")
+            "api_key": obj.get("api_key"),
+            "duration_in_seconds": obj.get("duration_in_seconds"),
+            "is_ci": obj.get("is_ci"),
+            "is_docker": obj.get("is_docker"),
+            "number_of_api_calls_error": obj.get("number_of_api_calls_error"),
+            "number_of_api_calls_success": obj.get("number_of_api_calls_success"),
+            "number_of_services": obj.get("number_of_services"),
+            "server_time_utc": obj.get("server_time_utc"),
+            "session_id": obj.get("session_id"),
+            "system": obj.get("system"),
+            "top_user_agent": obj.get("top_user_agent"),
+            "version": obj.get("version")
         })
         # store additional fields in additional_properties
         for _key in obj.keys():
