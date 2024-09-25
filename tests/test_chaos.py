@@ -24,3 +24,6 @@ class TestLocalStackClient:
         assert len(rules) == 1
         assert rules[0].region == "us-east-1"
         assert rules[0].service == "dynamodb"
+
+        rules = self.client.set_fault_rules(fault_rule=[])
+        assert not rules
