@@ -24,12 +24,11 @@ from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
-class LocalstackChaosEffectsGet200Response(BaseModel):
+class NetworkEffectsConfig(BaseModel):
     """
     Configuration for network effects.
     """ # noqa: E501
     latency: Annotated[int, Field(strict=True, ge=0)] = Field(description="Network latency in milliseconds. By default, 0 is used.")
-    additional_properties: Dict[str, Any] = {}
     __properties: ClassVar[List[str]] = ["latency"]
 
     model_config = ConfigDict(
@@ -50,7 +49,7 @@ class LocalstackChaosEffectsGet200Response(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of LocalstackChaosEffectsGet200Response from a JSON string"""
+        """Create an instance of NetworkEffectsConfig from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -62,10 +61,8 @@ class LocalstackChaosEffectsGet200Response(BaseModel):
         * `None` is only added to the output dict for nullable fields that
           were set at model initialization. Other fields with value `None`
           are ignored.
-        * Fields in `self.additional_properties` are added to the output dict.
         """
         excluded_fields: Set[str] = set([
-            "additional_properties",
         ])
 
         _dict = self.model_dump(
@@ -73,16 +70,11 @@ class LocalstackChaosEffectsGet200Response(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # puts key-value pairs in additional_properties in the top level
-        if self.additional_properties is not None:
-            for _key, _value in self.additional_properties.items():
-                _dict[_key] = _value
-
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of LocalstackChaosEffectsGet200Response from a dict"""
+        """Create an instance of NetworkEffectsConfig from a dict"""
         if obj is None:
             return None
 
@@ -92,11 +84,6 @@ class LocalstackChaosEffectsGet200Response(BaseModel):
         _obj = cls.model_validate({
             "latency": obj.get("latency")
         })
-        # store additional fields in additional_properties
-        for _key in obj.keys():
-            if _key not in cls.__properties:
-                _obj.additional_properties[_key] = obj.get(_key)
-
         return _obj
 
 

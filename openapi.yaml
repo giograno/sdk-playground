@@ -66,6 +66,17 @@ components:
       schema:
         type: string
   schemas:
+    NetworkEffectsConfig:
+      type: object
+      description: Configuration for network effects.
+      additionalProperties: false
+      required:
+        - latency
+      properties:
+        latency:
+          type: integer
+          description: Network latency in milliseconds. By default, 0 is used.
+          minimum: 0
     InitScripts:
       additionalProperties: false
       properties:
@@ -885,7 +896,6 @@ paths:
                     type: string
                 required:
                 - edition
-                - features
                 - services
                 - version
                 type: object
@@ -1136,60 +1146,41 @@ paths:
   /localstack/chaos/effects:
     post:
       summary: Configure network effects
-      description: Network effects include things like latency, jitter, bandwidth
-        throttling etc. which do not lead to an application-level fault/exception.
-      tags:
-      - pro
-      - chaos
+      description: Network effects include things like latency, jitter, bandwidth throttling etc. which do not lead to an application-level fault/exception.
+      operationId: set_network_effects
+      tags: [pro, chaos]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              description: Configuration for network effects.
-              additionalProperties: false
-              required:
-              - latency
-              properties:
-                latency:
-                  type: integer
-                  description: Network latency in milliseconds. By default, 0 is used.
-                  minimum: 0
+              $ref: '#/components/schemas/NetworkEffectsConfig'
       responses:
         200:
           description: Successfully configured network effects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkEffectsConfig'
     get:
       summary: Get current network effects configuration
-      tags:
-      - pro
-      - chaos
-      description: Retrieve the current configuration for network latency effects
-        in Localstack Chaos.
+      tags: [pro, chaos]
+      operationId: get_network_effects
+      description: Retrieve the current configuration for network latency effects in Localstack Chaos.
       responses:
         200:
           description: Successful retrieval of configuration
           content:
             application/json:
               schema:
-                type: object
-                description: Configuration for network effects.
-                additionalProperties: false
-                required:
-                - latency
-                properties:
-                  latency:
-                    type: integer
-                    description: Network latency in milliseconds. By default, 0 is
-                      used.
-                    minimum: 0
+                $ref: '#/components/schemas/NetworkEffectsConfig'
+
   /localstack/chaos/faults:
     get:
       summary: Get the current fault configuration
       description: Retrieve the list of currently configured fault rules.
-      tags:
-      - pro
-      - chaos
+      operationId: get_fault_rules
+      tags: [pro, chaos]
       responses:
         200:
           description: Successful retrieval of current configuration.
@@ -1204,9 +1195,8 @@ paths:
     post:
       summary: Add a new fault configuration
       description: Add a new set of fault rules.
-      tags:
-      - pro
-      - chaos
+      operationId: add_fault_rules
+      tags: [pro, chaos]
       requestBody:
         required: true
         content:
@@ -1228,12 +1218,12 @@ paths:
                 uniqueItems: true
                 items:
                   $ref: '#/components/schemas/FaultRule'
+
     patch:
       summary: Add a rule to the current configuration
       description: Add a new rule to the existing fault configuration.
-      tags:
-      - pro
-      - chaos
+      operationId: add_fault_rule
+      tags: [pro, chaos]
       requestBody:
         required: true
         content:
@@ -1255,12 +1245,12 @@ paths:
                 uniqueItems: true
                 items:
                   $ref: '#/components/schemas/FaultRule'
+
     delete:
       summary: Delete a rule from the configuration
       description: Remove a rule from the fault configuration.
-      tags:
-      - pro
-      - chaos
+      operationId: delete_fault_rule
+      tags: [pro, chaos]
       requestBody:
         required: true
         content:
