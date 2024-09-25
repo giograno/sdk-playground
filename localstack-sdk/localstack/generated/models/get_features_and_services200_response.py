@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, StrictStr, field_validator
-from typing import Any, ClassVar, Dict, List
+from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -28,7 +28,7 @@ class GetFeaturesAndServices200Response(BaseModel):
     GetFeaturesAndServices200Response
     """ # noqa: E501
     edition: StrictStr
-    features: Dict[str, Any]
+    features: Optional[Dict[str, Any]] = None
     services: Dict[str, Any]
     version: StrictStr
     additional_properties: Dict[str, Any] = {}
