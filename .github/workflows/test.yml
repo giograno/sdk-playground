@@ -33,12 +33,14 @@ jobs:
 
     - name: Pull image
       run: |
-        docker pull localstack/localstack
+        docker pull localstack/localstack-pro
 
     - name: Start Localstack
+      env:
+       LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
       run: |
           source .venv/bin/activate
-          DEBUG=1 DISABLE_EVENTS="1" IMAGE_NAME="localstack/localstack:latest" localstack start -d
+          DEBUG=1 DISABLE_EVENTS="1" IMAGE_NAME="localstack/localstack-pro:latest" localstack start -d
           localstack wait -t 120 || (python -m localstack.cli.main logs && false)
 
     - name: Run Python Tests

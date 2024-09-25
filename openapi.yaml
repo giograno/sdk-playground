@@ -1143,7 +1143,7 @@ paths:
       tags:
       - pro
       - aws
-  /localstack/chaos/effects:
+  /_localstack/chaos/effects:
     post:
       summary: Configure network effects
       description: Network effects include things like latency, jitter, bandwidth throttling etc. which do not lead to an application-level fault/exception.
@@ -1175,7 +1175,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/NetworkEffectsConfig'
 
-  /localstack/chaos/faults:
+  /_localstack/chaos/faults:
     get:
       summary: Get the current fault configuration
       description: Retrieve the list of currently configured fault rules.
@@ -1194,8 +1194,8 @@ paths:
                   $ref: '#/components/schemas/FaultRule'
     post:
       summary: Add a new fault configuration
-      description: Add a new set of fault rules.
-      operationId: add_fault_rules
+      description: Overwrite the set of fault rules with a new configuration.
+      operationId: set_fault_rules
       tags: [pro, chaos]
       requestBody:
         required: true
@@ -1220,9 +1220,9 @@ paths:
                   $ref: '#/components/schemas/FaultRule'
 
     patch:
-      summary: Add a rule to the current configuration
-      description: Add a new rule to the existing fault configuration.
-      operationId: add_fault_rule
+      summary: Add rules to the current configuration
+      description: Add new rules to the existing fault configuration.
+      operationId: add_fault_rules
       tags: [pro, chaos]
       requestBody:
         required: true
@@ -1247,16 +1247,19 @@ paths:
                   $ref: '#/components/schemas/FaultRule'
 
     delete:
-      summary: Delete a rule from the configuration
-      description: Remove a rule from the fault configuration.
-      operationId: delete_fault_rule
+      summary: Delete rules from the configuration
+      description: Remove rules from the fault configuration.
+      operationId: delete_fault_rules
       tags: [pro, chaos]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FaultRule'
+              type: array
+              description: List of rules to delete
+              items:
+                $ref: '#/components/schemas/FaultRule'
       responses:
         200:
           description: Successful retrieval of current configuration.
