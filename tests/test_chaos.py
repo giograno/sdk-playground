@@ -22,6 +22,5 @@ class TestLocalStackClient:
 
         rules = self.client.delete_fault_rules(fault_rules=[rule_one])
         assert len(rules) == 1
-        assert rules[0].region == 'us-east-1'
-        assert rules[0].service == 'dynamodb'
-
+        assert rules[0].region == "us-east-1"
+        assert rules[0].service == "dynamodb"

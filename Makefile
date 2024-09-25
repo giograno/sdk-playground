@@ -30,6 +30,12 @@ clean-generated:	## Cleanup generated code
 	touch localstack-sdk/localstack/generated/api/__init__.py
 	touch localstack-sdk/localstack/generated/models/__init__.py
 
+format:            		  ## Run ruff to format the whole codebase
+	($(VENV_RUN); python -m ruff format .; python -m ruff check --output-format=full --exclude localstack-sdk/localstack/generated --fix .)
+
+lint:
+	($(VENV_RUN); python -m ruff check --exclude localstack-sdk/localstack/generated --output-format=full . && python -m ruff format --exclude localstack-sdk/localstack/generated --check .)
+
 test:              		  ## Run automated tests
 	($(VENV_RUN); $(TEST_EXEC) pytest --durations=10 --log-cli-level=$(PYTEST_LOGLEVEL) $(PYTEST_ARGS) $(TEST_PATH))
 

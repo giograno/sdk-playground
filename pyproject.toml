@@ -35,3 +35,19 @@ where = ["localstack-sdk/"]
 include = ["localstack*"]
 exclude = ["tests*"]
 
+[tool.ruff]
+# Extend the ruff config in the root dir
+extend = "../ruff.toml"
+# Always generate Python 3.8-compatible code.
+target-version = "py38"
+line-length = 100
+src = ["tests", "localstack"]
+exclude = [
+    ".venv*",
+    "venv*",
+    "dist",
+    "build",
+    "target",
+    "*.egg-info",
+    ".git",
+]

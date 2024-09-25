@@ -17,4 +17,8 @@ docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate \
     -p packageName=localstack.generated \
     --template-dir /local/templates \
     --global-property apiTests=false,modelTests=false \
-    --global-property apiDocs=false,modelDocs=False
+    --global-property apiDocs=false,modelDocs=False \
+    --enable-post-process-file
+
+# todo: try to use the appropriate post processing argument
+make format

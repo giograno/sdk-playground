@@ -8,4 +8,3 @@ from localstack.generated.api.localstack_api import LocalstackApi
 from localstack.generated.api.pods_api import PodsApi
 from localstack.generated.api.pro_api import ProApi
 from localstack.generated.api.state_api import StateApi
-
