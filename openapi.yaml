@@ -8,19 +8,19 @@ info:
     checks, plugins, initialisation hooks, service introspection, and more.
   termsOfService: https://www.localstack.cloud/legal/tos
   title: LocalStack REST API
-  version: 3.7.3.dev45
+  version: 3.8.1.dev4
 externalDocs:
   description: LocalStack Documentation
   url: https://docs.localstack.cloud
-servers:
-- url: http://{host}:{port}
-  variables:
-    port:
-      default: '4566'
-    host:
-      default: localhost.localstack.cloud
 components:
   parameters:
+    ServiceName:
+      description: Service name
+      in: path
+      name: service
+      required: true
+      schema:
+        type: string
     SesMessageId:
       description: ID of the message (`id` field of SES message)
       in: query
@@ -58,25 +58,114 @@ components:
       schema:
         default: us-east-1
         type: string
-    ServiceName:
-      description: Service name
-      in: path
-      name: service
-      required: true
-      schema:
-        type: string
   schemas:
-    NetworkEffectsConfig:
-      type: object
-      description: Configuration for network effects.
+    CloudWatchMetrics:
       additionalProperties: false
-      required:
-        - latency
       properties:
-        latency:
-          type: integer
-          description: Network latency in milliseconds. By default, 0 is used.
+        metrics:
+          items:
+            additionalProperties: false
+            properties:
+              account:
+                description: Account ID
+                type: string
+              d:
+                description: Dimensions
+                items:
+                  additionalProperties: false
+                  properties:
+                    n:
+                      description: Dimension name
+                      type: string
+                    v:
+                      description: Dimension value
+                      oneOf:
+                      - type: string
+                      - type: integer
+                  required:
+                  - n
+                  - v
+                  type: object
+                type: array
+              n:
+                description: Metric name
+                type: string
+              ns:
+                description: Namespace
+                type: string
+              region:
+                description: Region name
+                type: string
+              t:
+                description: Timestamp
+                oneOf:
+                - format: date-time
+                  type: string
+                - type: number
+              v:
+                description: Metric value
+                oneOf:
+                - type: string
+                - type: integer
+            required:
+            - ns
+            - n
+            - v
+            - t
+            - d
+            - account
+            - region
+            type: object
+          type: array
+      required:
+      - metrics
+      type: object
+    FaultRule:
+      additionalProperties: false
+      description: Each rule represents the conditions for a fault and its detrimental
+        effects.
+      properties:
+        description:
+          description: A description of this rule. This field has no effect.
+          maxLength: 8192
+          type: string
+        error:
+          additionalProperties: false
+          properties:
+            code:
+              description: Descriptive error code used in response. If omitted, a
+                default is used.
+              pattern: ^[a-zA-Z0-9]+$
+              type: string
+            statusCode:
+              description: HTTP status code to use in response, e.g., 503. If omitted,
+                a default is used.
+              maximum: 599
+              minimum: 400
+              type: integer
+          type: object
+        operation:
+          description: Name of the operation, e.g., 'PutRecord'. If omitted, all operations
+            are affected.
+          pattern: ^[a-zA-Z]+$
+          type: string
+        probability:
+          description: Probability of invoking this rule, e.g., 0.5. If omitted, 1.0
+            is used.
+          maximum: 1
           minimum: 0
+          type: number
+        region:
+          description: Region name, e.g., 'ap-south-1'. If omitted, all regions are
+            affected.
+          pattern: ^[a-zA-Z0-9-]+$
+          type: string
+        service:
+          description: Name of the service, e.g., 'kinesis'. If omitted, all services
+            are affected.
+          pattern: ^[a-zA-Z0-9-_]+$
+          type: string
+      type: object
     InitScripts:
       additionalProperties: false
       properties:
@@ -117,6 +206,116 @@ components:
       - completed
       - scripts
       type: object
+    InitScriptsStage:
+      additionalProperties: false
+      properties:
+        completed:
+          type: boolean
+        scripts:
+          items:
+            additionalProperties: false
+            properties:
+              name:
+                type: string
+              stage:
+                type: string
+              state:
+                type: string
+            required:
+            - stage
+            - name
+            - state
+            type: object
+          type: array
+      required:
+      - completed
+      - scripts
+      type: object
+    PodList:
+      additionalProperties: false
+      properties:
+        cloudpods:
+          items:
+            additionalProperties: false
+            properties:
+              last_change:
+                type:
+                - number
+                - 'null'
+              max_version:
+                type: integer
+              pod_name:
+                type: string
+            required:
+            - pod_name
+            - max_version
+            type: object
+          type: array
+      required:
+      - cloudpods
+      type: object
+    PodSaveRequest:
+      additionalProperties: false
+      properties:
+        attributes:
+          type: object
+        remote:
+          type: object
+      type: object
+    PodVersions:
+      properties:
+        versions:
+          items:
+            properties:
+              created_at:
+                description: Timestamp when the version was created.
+                type: integer
+              deleted:
+                description: Deletion timestamp or null if not deleted.
+                type:
+                - string
+                - 'null'
+              description:
+                description: Description of the version.
+                type:
+                - string
+                - 'null'
+              localstack_version:
+                description: Version of LocalStack used.
+                type: string
+              services:
+                description: List of services associated with this version.
+                items:
+                  type: string
+                type: array
+              storage_size:
+                description: Size of storage used by this version.
+                type: integer
+              user:
+                description: User associated with this version.
+                type:
+                - string
+                - 'null'
+              user_id:
+                description: ID of the user associated with this version.
+                type: string
+              version:
+                description: Version number.
+                type: integer
+            type: object
+          type: array
+      type: object
+    RemoteConfig:
+      oneOf:
+      - additionalProperties: false
+        description: Empty remote config. Targeting default LocalStack platform
+        type: object
+      - properties:
+          remote:
+            type: string
+        required:
+        - remote
+        type: object
     SesSentEmail:
       additionalProperties: false
       properties:
@@ -205,204 +404,154 @@ components:
       - subscription_arn
       type: object
     StateResult:
-      type: object
       description: The result of a state save operation.
       properties:
-        service:
-          type: string
-          description: The service name.
-        status:
-          type: string
-          description: The status, ok or error.
         message:
-          type: string
           description: An error message.
-    CloudPodEvent:
-      type: object
-      description: A generic cloud pod event.
-      required:
-      - event
-      - message
-      properties:
-        event:
           type: string
-          enum:
-          - log
-          - service
-          - error
-          - completion
-          description: The type of event.
-        message:
-          type: string
-          description: A message attached to the event.
-    PodServiceEvent:
-      allOf:
-      - $ref: '#/components/schemas/CloudPodEvent'
-      - type: object
-        description: A service event, e.g., save, load, or reset.
-        required:
-        - service
-        - operation
-        - status
-        properties:
-          service:
-            type: string
-            description: The service name.
-          operation:
-            type: string
-            description: The operation performed on the service.
-          status:
-            type: string
-            description: The status for the operation, either 'ok' or 'error'.
-    PodCompletionEvent:
-      allOf:
-      - $ref: '#/components/schemas/CloudPodEvent'
-      - type: object
-        description: Completion event with extra information.
-        required:
-        - operation
-        - status
-        properties:
-          info:
-            type: object
-            additionalProperties: true
-            description: Extra information attached to the event.
-          operation:
-            type: string
-            description: The high-level operation triggering the chain of events.
-          status:
-            type: string
-            description: The status for the whole pod operation, either 'ok' or 'error'.
-    FaultRule:
-      type: object
-      description: Each rule represents the conditions for a fault and its detrimental
-        effects.
-      additionalProperties: false
-      properties:
-        region:
-          type: string
-          description: Region name, e.g., 'ap-south-1'. If omitted, all regions are
-            affected.
-          pattern: ^[a-zA-Z0-9-]+$
         service:
+          description: The service name.
           type: string
-          description: Name of the service, e.g., 'kinesis'. If omitted, all services
-            are affected.
-          pattern: ^[a-zA-Z0-9-_]+$
-        operation:
+        status:
+          description: The status, ok or error.
           type: string
-          description: Name of the operation, e.g., 'PutRecord'. If omitted, all operations
-            are affected.
-          pattern: ^[a-zA-Z]+$
-        probability:
-          type: number
-          description: Probability of invoking this rule, e.g., 0.5. If omitted, 1.0
-            is used.
-          minimum: 0
-          maximum: 1
-        description:
-          type: string
-          description: A description of this rule. This field has no effect.
-          maxLength: 8192
-        error:
-          type: object
-          additionalProperties: false
-          properties:
-            statusCode:
-              type: integer
-              description: HTTP status code to use in response, e.g., 503. If omitted,
-                a default is used.
-              minimum: 400
-              maximum: 599
-            code:
-              type: string
-              description: Descriptive error code used in response. If omitted, a
-                default is used.
-              pattern: ^[a-zA-Z0-9]+$
-    PodSaveRequest:
+      type: object
+    NetworkEffectsConfig:
+      type: object
+      description: Configuration for network effects.
       additionalProperties: false
-      properties: {}
-      required: []
-      type: object
-    RemoteConfig:
-      type: object
-      properties:
-        remote_url:
-          type: string
       required:
-      - remote_url
+        - latency
+      properties:
+        latency:
+          type: integer
+          description: Network latency in milliseconds. By default, 0 is used.
+          minimum: 0
 paths:
   /_aws/cloudwatch/metrics/raw:
     get:
       description: Retrieve CloudWatch metrics
       operationId: get_cloudwatch_metrics
-      tags:
-      - aws
       responses:
         '200':
           content:
             application/json:
               schema:
-                additionalProperties: false
-                properties:
-                  metrics:
-                    items:
-                      additionalProperties: false
-                      properties:
-                        account:
-                          description: Account ID
-                          type: string
-                        d:
-                          description: Dimensions
-                          items:
-                            additionalProperties: false
-                            properties:
-                              n:
-                                description: Dimension name
-                                type: string
-                              v:
-                                description: Dimension value
-                                type: string
-                            required:
-                            - n
-                            - v
-                            type: object
-                          type: array
-                        n:
-                          description: Metric name
-                          type: string
-                        ns:
-                          description: Namespace
-                          type: string
-                        region:
-                          description: Region name
-                          type: string
-                        t:
-                          description: Timestamp
-                          type: number
-                        v:
-                          description: Metric value
-                          type: string
-                      required:
-                      - ns
-                      - n
-                      - v
-                      - t
-                      - d
-                      - account
-                      - region
-                      type: object
-                    type: array
-                required:
-                - metrics
-                type: object
+                $ref: '#/components/schemas/CloudWatchMetrics'
           description: CloudWatch metrics
+      tags:
+      - aws
+  /_aws/cognito-idp/forgotPassword:
+    get:
+      description: Cognito forgot password endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
+      tags:
+      - pro
+      - aws
+    post:
+      description: Cognito forgot password endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
+      tags:
+      - pro
+      - aws
+  /_aws/cognito-idp/login:
+    get:
+      description: Cognito login endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
+      tags:
+      - pro
+      - aws
+    post:
+      description: Cognito login endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
+      tags:
+      - pro
+      - aws
+  /_aws/cognito-idp/logout:
+    get:
+      description: Cognito logout endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
+      tags:
+      - pro
+      - aws
+    post:
+      description: Cognito logout endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
+      tags:
+      - pro
+      - aws
+  /_aws/cognito-idp/oauth2/authorize:
+    get:
+      description: Cognito OAuth 2.0 authorization endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html
+      tags:
+      - pro
+      - aws
+  /_aws/cognito-idp/oauth2/revoke:
+    post:
+      description: Cognito OAuth 2.0 token revocation endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/revocation-endpoint.html
+      tags:
+      - pro
+      - aws
+  /_aws/cognito-idp/oauth2/token:
+    post:
+      description: Cognito OAuth 2.0 token endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html
+      tags:
+      - pro
+      - aws
+  /_aws/cognito-idp/oauth2/userInfo:
+    get:
+      description: Cognito OpenID Connect userInfo endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/userinfo-endpoint.html
+      tags:
+      - pro
+      - aws
+  /_aws/cognito-idp/saml2/idpresponse:
+    get:
+      description: Cognito SAML 2.0 idpresponse endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/saml2-idpresponse-endpoint.html
+      tags:
+      - pro
+      - aws
+    post:
+      description: Cognito SAML 2.0 idpresponse endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/saml2-idpresponse-endpoint.html
+      tags:
+      - pro
+      - aws
+  /_aws/cognito-idp/signup:
+    get:
+      description: Cognito signup endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
+      tags:
+      - pro
+      - aws
+    post:
+      description: Cognito signup endpoint
+      externalDocs:
+        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
+      tags:
+      - pro
+      - aws
   /_aws/dynamodb/expired:
     delete:
       description: Delete expired items from TTL-enabled DynamoDB tables
       operationId: delete_ddb_expired_items
-      tags:
-      - aws
       responses:
         '200':
           content:
@@ -417,12 +566,12 @@ paths:
                 - ExpiredItems
                 type: object
           description: Operation was successful
+      tags:
+      - aws
   /_aws/events/rules/{rule_arn}/trigger:
     get:
       description: Trigger a scheduled EventBridge rule
       operationId: trigger_event_bridge_rule
-      tags:
-      - aws
       parameters:
       - description: EventBridge rule ARN
         in: path
@@ -435,23 +584,29 @@ paths:
           description: EventBridge rule was triggered
         '404':
           description: Not found
+      tags:
+      - aws
+  /_aws/iot/LocalStackIoTRootCA.pem:
+    get:
+      description: Retrieve certificate for LocalStack IoT root certificate authority
+      tags:
+      - pro
+      - aws
   /_aws/lambda/init:
     get:
       description: Retrieve Lambda runtime init binary
       operationId: get_lambda_init
-      tags:
-      - aws
       responses:
         '200':
           content:
             application/octet-stream: {}
           description: Lambda runtime init binary
+      tags:
+      - aws
   /_aws/lambda/runtimes:
     get:
       description: List available Lambda runtimes
       operationId: get_lambda_runtimes
-      tags:
-      - aws
       parameters:
       - in: query
         name: filter
@@ -478,22 +633,22 @@ paths:
                 - Runtimes
                 type: object
           description: Available Lambda runtimes
+      tags:
+      - aws
   /_aws/ses:
     delete:
       description: Discard sent SES messages
       operationId: discard_ses_messages
-      tags:
-      - aws
       parameters:
       - $ref: '#/components/parameters/SesMessageId'
       responses:
         '204':
           description: Message was successfully discarded
+      tags:
+      - aws
     get:
       description: Retrieve sent SES messages
       operationId: get_ses_messages
-      tags:
-      - aws
       parameters:
       - $ref: '#/components/parameters/SesMessageId'
       - description: Source of the message (`source` field of SES message)
@@ -517,12 +672,12 @@ paths:
                 - messages
                 type: object
           description: List of sent messages
+      tags:
+      - aws
   /_aws/sns/platform-endpoint-messages:
     delete:
       description: Discard SNS platform endpoint messages
       operationId: discard_sns_messages
-      tags:
-      - aws
       parameters:
       - $ref: '#/components/parameters/SnsAccountId'
       - $ref: '#/components/parameters/SnsRegion'
@@ -530,11 +685,11 @@ paths:
       responses:
         '204':
           description: Platform endpoint message was discarded
+      tags:
+      - aws
     get:
       description: Retrieve SNS platform endpoint messages
       operationId: get_sns_messages
-      tags:
-      - aws
       parameters:
       - $ref: '#/components/parameters/SnsAccountId'
       - $ref: '#/components/parameters/SnsRegion'
@@ -555,12 +710,12 @@ paths:
                 - region
                 type: object
           description: Platform endpoint messages
+      tags:
+      - aws
   /_aws/sns/sms-messages:
     delete:
       description: Discard SNS SMS messages
       operationId: discard_sns_sms_messages
-      tags:
-      - aws
       parameters:
       - $ref: '#/components/parameters/SnsAccountId'
       - $ref: '#/components/parameters/SnsRegion'
@@ -570,11 +725,11 @@ paths:
           content:
             text/plain: {}
           description: SMS message was discarded
+      tags:
+      - aws
     get:
       description: Retrieve SNS SMS messages
       operationId: get_sns_sms_messages
-      tags:
-      - aws
       parameters:
       - $ref: '#/components/parameters/SnsAccountId'
       - $ref: '#/components/parameters/SnsRegion'
@@ -595,12 +750,12 @@ paths:
                 - region
                 type: object
           description: SNS SMS messages
+      tags:
+      - aws
   /_aws/sns/subscription-tokens/{subscription_arn}:
     get:
       description: Retrieve SNS subscription token for confirmation
       operationId: get_sns_subscription_token
-      tags:
-      - aws
       parameters:
       - description: '`subscriptionArn` resource of subscription token'
         in: path
@@ -636,12 +791,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/SnsSubscriptionTokenError'
           description: Not found
+      tags:
+      - aws
   /_aws/sqs/messages:
     get:
       description: List SQS queue messages without side effects
       operationId: list_all_sqs_messages
-      tags:
-      - aws
       parameters:
       - description: SQS queue URL
         in: query
@@ -662,12 +817,12 @@ paths:
           content:
             text/xml: {}
           description: Not found
+      tags:
+      - aws
   /_aws/sqs/messages/{region}/{account_id}/{queue_name}:
     get:
       description: List SQS messages without side effects
       operationId: list_sqs_messages
-      tags:
-      - aws
       parameters:
       - description: SQS queue region
         in: path
@@ -700,12 +855,31 @@ paths:
           content:
             text/xml: {}
           description: Not found
+      tags:
+      - aws
+  /_localstack/cloudformation/deploy:
+    get:
+      description: UI to deploy and manage your CloudFormation stacks using public
+        templates
+      parameters:
+      - description: URL to a CloudFormation template (JSON or YAML).
+        in: query
+        name: templateURL
+        required: false
+        schema:
+          format: uri
+          type: string
+      responses:
+        '200':
+          content:
+            text/html:
+              schema:
+                type: string
+          description: HTML page for CloudFormation deployment.
   /_localstack/config:
     get:
       description: Get current LocalStack configuration
       operationId: get_config
-      tags:
-      - localstack
       responses:
         '200':
           content:
@@ -713,11 +887,11 @@ paths:
               schema:
                 type: object
           description: Current LocalStack configuration
+      tags:
+      - localstack
     post:
       description: Configuration option to update with new value
       operationId: update_config_option
-      tags:
-      - localstack
       requestBody:
         content:
           application/json:
@@ -758,12 +932,12 @@ paths:
           content:
             application/json: {}
           description: Bad request
+      tags:
+      - localstack
   /_localstack/diagnose:
     get:
       description: Get diagnostics report
       operationId: get_diagnostics
-      tags:
-      - localstack
       responses:
         '200':
           content:
@@ -861,12 +1035,12 @@ paths:
                 - usage
                 type: object
           description: Diagnostics report
+      tags:
+      - localstack
   /_localstack/health:
     get:
       description: Get available LocalStack features and AWS services
       operationId: get_features_and_services
-      tags:
-      - localstack
       parameters:
       - allowEmptyValue: true
         in: query
@@ -900,20 +1074,20 @@ paths:
                 - version
                 type: object
           description: Available LocalStack features and AWS services
-    head:
       tags:
       - localstack
+    head:
       operationId: health
       responses:
         '200':
           content:
             text/plain: {}
           description: ''
+      tags:
+      - localstack
     post:
       description: Restart or terminate LocalStack session
       operationId: manage_session
-      tags:
-      - localstack
       requestBody:
         content:
           application/json:
@@ -939,11 +1113,11 @@ paths:
           content:
             text/plain: {}
           description: Bad request
+      tags:
+      - localstack
     put:
       description: Store arbitrary data to in-memory state
       operationId: store_data
-      tags:
-      - localstack
       requestBody:
         content:
           application/json:
@@ -963,12 +1137,12 @@ paths:
                 - status
                 type: object
           description: Data was saved
+      tags:
+      - localstack
   /_localstack/info:
     get:
       description: Get information about the current LocalStack session
       operationId: get_session_info
-      tags:
-      - localstack
       responses:
         '200':
           content:
@@ -976,12 +1150,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/SessionInfo'
           description: Information about the current LocalStack session
+      tags:
+      - localstack
   /_localstack/init:
     get:
       description: Get information about init scripts
       operationId: get_init_script_info
-      tags:
-      - localstack
       responses:
         '200':
           content:
@@ -989,12 +1163,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/InitScripts'
           description: Information about init scripts
+      tags:
+      - localstack
   /_localstack/init/{stage}:
     get:
       description: Get information about init scripts in a specific stage
       operationId: get_init_script_info_stage
-      tags:
-      - localstack
       parameters:
       - in: path
         name: stage
@@ -1006,290 +1180,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InitScripts'
+                $ref: '#/components/schemas/InitScriptsStage'
           description: Information about init scripts in a specific stage
+      tags:
+      - localstack
   /_localstack/plugins:
     get:
       description: ''
       operationId: get_plugins
-      tags:
-      - localstack
       responses:
         '200':
           content:
             application/json: {}
           description: ''
-  /_localstack/usage:
-    get:
-      description: ''
-      operationId: get_usage
       tags:
       - localstack
-      responses:
-        '200':
-          content:
-            application/json: {}
-          description: ''
-  /_aws/cognito-idp/forgotPassword:
-    get:
-      description: Cognito forgot password endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
-      tags:
-      - pro
-      - aws
-    post:
-      description: Cognito forgot password endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
-      tags:
-      - pro
-      - aws
-  /_aws/cognito-idp/login:
-    get:
-      description: Cognito login endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
-      tags:
-      - pro
-      - aws
-    post:
-      description: Cognito login endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
-      tags:
-      - pro
-      - aws
-  /_aws/cognito-idp/logout:
-    get:
-      description: Cognito logout endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
-      tags:
-      - pro
-      - aws
-    post:
-      description: Cognito logout endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
-      tags:
-      - pro
-      - aws
-  /_aws/cognito-idp/oauth2/authorize:
-    get:
-      description: Cognito OAuth 2.0 authorization endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/authorization-endpoint.html
-      tags:
-      - pro
-      - aws
-  /_aws/cognito-idp/oauth2/token:
-    post:
-      description: Cognito OAuth 2.0 token endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/token-endpoint.html
-      tags:
-      - pro
-      - aws
-  /_aws/cognito-idp/oauth2/revoke:
-    post:
-      description: Cognito OAuth 2.0 token revocation endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/revocation-endpoint.html
-      tags:
-      - pro
-      - aws
-  /_aws/cognito-idp/oauth2/userInfo:
-    get:
-      description: Cognito OpenID Connect userInfo endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/userinfo-endpoint.html
-      tags:
-      - pro
-      - aws
-  /_aws/cognito-idp/saml2/idpresponse:
-    get:
-      description: Cognito SAML 2.0 idpresponse endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/saml2-idpresponse-endpoint.html
-      tags:
-      - pro
-      - aws
-    post:
-      description: Cognito SAML 2.0 idpresponse endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/saml2-idpresponse-endpoint.html
-      tags:
-      - pro
-      - aws
-  /_aws/cognito-idp/signup:
-    get:
-      description: Cognito signup endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
-      tags:
-      - pro
-      - aws
-    post:
-      description: Cognito signup endpoint
-      externalDocs:
-        url: https://docs.aws.amazon.com/cognito/latest/developerguide/hosted-UI-endpoints.html
-      tags:
-      - pro
-      - aws
-  /_aws/iot/LocalStackIoTRootCA.pem:
-    get:
-      description: Retrieve certificate for LocalStack IoT root certificate authority
-      tags:
-      - pro
-      - aws
-  /_localstack/chaos/effects:
-    post:
-      summary: Configure network effects
-      description: Network effects include things like latency, jitter, bandwidth throttling etc. which do not lead to an application-level fault/exception.
-      operationId: set_network_effects
-      tags: [pro, chaos]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NetworkEffectsConfig'
-      responses:
-        200:
-          description: Successfully configured network effects
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NetworkEffectsConfig'
-    get:
-      summary: Get current network effects configuration
-      tags: [pro, chaos]
-      operationId: get_network_effects
-      description: Retrieve the current configuration for network latency effects in Localstack Chaos.
-      responses:
-        200:
-          description: Successful retrieval of configuration
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NetworkEffectsConfig'
-
-  /_localstack/chaos/faults:
-    get:
-      summary: Get the current fault configuration
-      description: Retrieve the list of currently configured fault rules.
-      operationId: get_fault_rules
-      tags: [pro, chaos]
-      responses:
-        200:
-          description: Successful retrieval of current configuration.
-          content:
-            application/json:
-              schema:
-                type: array
-                description: List of configured rules for faults.
-                uniqueItems: true
-                items:
-                  $ref: '#/components/schemas/FaultRule'
-    post:
-      summary: Add a new fault configuration
-      description: Overwrite the set of fault rules with a new configuration.
-      operationId: set_fault_rules
-      tags: [pro, chaos]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              description: List of rules for faults.
-              uniqueItems: true
-              items:
-                $ref: '#/components/schemas/FaultRule'
-      responses:
-        200:
-          description: Successful retrieval of current configuration.
-          content:
-            application/json:
-              schema:
-                type: array
-                description: List of configured rules for faults.
-                uniqueItems: true
-                items:
-                  $ref: '#/components/schemas/FaultRule'
-
-    patch:
-      summary: Add rules to the current configuration
-      description: Add new rules to the existing fault configuration.
-      operationId: add_fault_rules
-      tags: [pro, chaos]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              description: List of configured rules for faults to be added.
-              uniqueItems: true
-              items:
-                $ref: '#/components/schemas/FaultRule'
-      responses:
-        200:
-          description: Successful retrieval of current configuration.
-          content:
-            application/json:
-              schema:
-                type: array
-                description: List of configured rules for faults.
-                uniqueItems: true
-                items:
-                  $ref: '#/components/schemas/FaultRule'
-
-    delete:
-      summary: Delete rules from the configuration
-      description: Remove rules from the fault configuration.
-      operationId: delete_fault_rules
-      tags: [pro, chaos]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              description: List of rules to delete
-              items:
-                $ref: '#/components/schemas/FaultRule'
-      responses:
-        200:
-          description: Successful retrieval of current configuration.
-          content:
-            application/json:
-              schema:
-                type: array
-                description: List of configured rules for faults.
-                uniqueItems: true
-                items:
-                  $ref: '#/components/schemas/FaultRule'
-  /_localstack/cloudformation/deploy:
-    get:
-      description: UI to deploy and manage your CloudFormation stacks using public
-        templates
-      parameters:
-      - name: templateURL
-        in: query
-        required: false
-        description: URL to a CloudFormation template (JSON or YAML).
-        schema:
-          type: string
-          format: uri
-      responses:
-        '200':
-          description: HTML page for CloudFormation deployment.
-          content:
-            text/html:
-              schema:
-                type: string
   /_localstack/pods:
     get:
       description: List cloud pods
@@ -1311,25 +1216,8 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: false
-                properties:
-                  cloudpods:
-                    items:
-                      additionalProperties: false
-                      properties:
-                        max_version:
-                          type: string
-                        pod_name:
-                          type: string
-                      required:
-                      - pod_name
-                      - max_version
-                      type: object
-                    type: array
-                required:
-                - cloudpods
-                type: object
-          description: ''
+                $ref: '#/components/schemas/PodList'
+          description: The list of Cloud Pods associated with a given identity
       tags:
       - pro
       - pods
@@ -1339,178 +1227,179 @@ paths:
         LocalStack and Moto versions.
 
         '
-      tags:
-      - pro
-      - pods
       responses:
         '200':
-          description: A JSON object containing environment version information.
           content:
             application/json:
               schema:
-                type: object
                 properties:
-                  localstack_version:
-                    type: string
-                    description: Version of LocalStack.
                   localstack_ext_version:
-                    type: string
                     description: Version of LocalStack Pro.
-                  moto_ext_version:
                     type: string
+                  localstack_version:
+                    description: Version of LocalStack.
+                    type: string
+                  moto_ext_version:
                     description: Version of Moto used within LocalStack.
+                    type: string
                   pro:
-                    type: boolean
                     description: Indicates whether LocalStack PRO is activated.
+                    type: boolean
+                type: object
+          description: A JSON object containing environment version information.
+      tags:
+      - pro
+      - pods
   /_localstack/pods/remotes:
     get:
       description: Retrieves a list of all configured remotes.
-      tags:
-      - pro
-      - pods
+      operationId: list_remotes
       responses:
         '200':
-          description: A list of remotes.
           content:
             application/json:
               schema:
-                type: object
                 properties:
                   remotes:
-                    type: array
                     items:
-                      type: object
                       properties:
                         name:
-                          type: string
                           description: Name of the remote.
+                          type: string
                         protocols:
-                          type: array
+                          description: Supported protocols of the remote.
                           items:
                             type: string
-                          description: Supported protocols of the remote.
+                          type: array
                         token:
-                          type: string
                           description: The token for this remote.
-                        remote_url:
-                          type: string
+                          type: object
+                        url:
                           description: URL of the remote server.
-  /_localstack/pods/remotes/{name}:
-    get:
-      summary: Get a specific remote
-      description: Retrieves information about a specific remote by name.
+                          type: string
+                      type: object
+                    type: array
+                type: object
+          description: A list of remotes.
       tags:
       - pro
       - pods
+  /_localstack/pods/remotes/{name}:
+    delete:
+      description: Deletes a remote with the specified name.
+      operationId: delete_remote
       parameters:
-      - name: name
+      - description: The name of the remote to delete.
         in: path
+        name: name
         required: true
-        description: The name of the remote.
         schema:
           type: string
       responses:
         '200':
-          description: Details of the remote.
+          description: Remote deleted successfully.
+      summary: Delete a remote
+      tags:
+      - pro
+      - pods
+    get:
+      description: Retrieves information about a specific remote by name.
+      operationId: get_remote
+      parameters:
+      - description: The name of the remote.
+        in: path
+        name: name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  name:
-                    type: string
-                    description: Name of the remote.
-                  protocols:
-                    type: array
-                    items:
-                      type: string
-                    description: Supported protocols of the remote.
-                  remote_url:
-                    type: string
-                    description: URL of the remote server.
               example:
                 name: example_remote
                 protocols:
                 - http
                 - https
                 remote_url: https://example.com
-    post:
-      summary: Create a new remote
-      description: Creates a new remote with the specified name and configuration.
+              schema:
+                properties:
+                  name:
+                    description: Name of the remote.
+                    type: string
+                  protocols:
+                    description: Supported protocols of the remote.
+                    items:
+                      type: string
+                    type: array
+                  remote:
+                    description: URL of the remote server.
+                    type: string
+                type: object
+          description: Details of the remote.
+      summary: Get a specific remote
       tags:
       - pro
       - pods
+    post:
+      description: Creates a new remote with the specified name and configuration.
+      operationId: create_remote
       parameters:
-      - name: name
+      - description: The name of the new remote.
         in: path
+        name: name
         required: true
-        description: The name of the new remote.
         schema:
           type: string
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
               properties:
                 protocols:
-                  type: array
+                  description: Supported protocols of the remote.
                   items:
                     type: string
-                  description: Supported protocols of the remote.
+                  type: array
                 remote_url:
-                  type: string
                   description: URL of the remote server.
+                  type: string
+              type: object
+        required: true
       responses:
         '200':
           description: Remote created successfully.
-    delete:
-      summary: Delete a remote
-      description: Deletes a remote with the specified name.
+      summary: Create a new remote
       tags:
       - pro
       - pods
-      parameters:
-      - name: name
-        in: path
-        required: true
-        description: The name of the remote to delete.
-        schema:
-          type: string
-      responses:
-        '200':
-          description: Remote deleted successfully.
   /_localstack/pods/state:
     get:
       description: Exports the current state of the LocalStack container into a zip
         file.
-      tags:
-      - pro
-      - pods
       parameters:
-      - name: pod_name
-        in: query
-        description: The name of the pod to save. Defaults to a unique name based
+      - description: The name of the pod to save. Defaults to a unique name based
           on the current timestamp.
+        in: query
+        name: pod_name
         required: false
         schema:
           type: string
-      - name: services
-        in: query
-        description: Comma-separated list of service names to include in the exported
+      - description: Comma-separated list of service names to include in the exported
           state.
+        in: query
+        name: services
         required: false
         schema:
           type: string
       responses:
         '200':
-          description: A zip file containing the exported pod state.
           content:
             application/zip:
               schema:
-                type: string
                 format: binary
+                type: string
+          description: A zip file containing the exported pod state.
           headers:
             Content-Disposition:
               description: Specifies that the response is an attachment.
@@ -1528,27 +1417,27 @@ paths:
               description: The size of the pod file in bytes.
               schema:
                 type: integer
-    post:
-      description: Loads a pod state from a zip file and restores its services.
       tags:
       - pro
       - pods
+    post:
+      description: Loads a pod state from a zip file and restores its services.
       requestBody:
-        required: true
         content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                pod:
-                  type: string
-                  format: binary
-              required:
-              - pod
           application/octet-stream:
             schema:
-              type: string
               format: binary
+              type: string
+          multipart/form-data:
+            schema:
+              properties:
+                pod:
+                  format: binary
+                  type: string
+              required:
+              - pod
+              type: object
+        required: true
       responses:
         '201':
           description: Pod state loaded successfully.
@@ -1559,6 +1448,9 @@ paths:
                 type: integer
         '400':
           description: Bad request.
+      tags:
+      - pro
+      - pods
   /_localstack/pods/state/metamodel:
     get:
       description: Extract a metamodel representing the state of the current LocalStack
@@ -1581,16 +1473,16 @@ paths:
         required: true
         schema:
           type: string
-      - in: query
+      - description: If true, the pod will be deleted only from the local storage
+        in: query
         name: local
         required: false
-        description: If true, the pod will be deleted only from the local storage
         schema:
           type: string
-      - in: header
+      - description: A secret token for authenticating the request against the platform
+        in: header
         name: x-localstack-state-secret
-        required: true
-        description: A secret token for authenticating the request against the platform
+        required: false
         schema:
           type: string
       requestBody:
@@ -1624,13 +1516,13 @@ paths:
       - description: Cloud pod version
         in: query
         name: version
-        required: true
+        required: false
         schema:
           type: string
-      - in: header
+      - description: A secret token for authenticating the request against the platform
+        in: header
         name: x-localstack-state-secret
-        required: true
-        description: A secret token for authenticating the request against the platform
+        required: false
         schema:
           type: string
       requestBody:
@@ -1641,12 +1533,7 @@ paths:
       responses:
         '200':
           content:
-            application/x-ndjson:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/CloudPodEvent'
-                - $ref: '#/components/schemas/PodServiceEvent'
-                - $ref: '#/components/schemas/PodCompletionEvent'
+            application/x-ndjson: {}
           description: The response is a sequence of JSON events, according to the
             schema, separated by a newline
       tags:
@@ -1656,35 +1543,35 @@ paths:
       description: Load a cloud pod version
       operationId: loadPod
       parameters:
-      - in: path
-        description: The name of the Cloud Pod to be loaded into the runtime
+      - description: The name of the Cloud Pod to be loaded into the runtime
+        in: path
         name: name
         required: true
         schema:
           type: string
-      - in: query
+      - description: The version of the Cloud Pod to be loaded into the runtime
+        in: query
         name: version
-        description: The version of the Cloud Pod to be loaded into the runtime
         required: false
         schema:
           type: string
-      - in: query
+      - description: Merge strategy to use when loading the pod
+        in: query
         name: merge
-        description: Merge strategy to use when loading the pod
         required: false
         schema:
           type: string
-      - in: query
-        name: ignore_version_mismatches
-        description: Ignores version mismatches between the pod and the current LocalStack
+      - description: Ignores version mismatches between the pod and the current LocalStack
           version.
+        in: query
+        name: ignore_version_mismatches
         required: false
         schema:
           type: string
-      - in: header
+      - description: A secret token for authenticating the request against the platform
+        in: header
         name: x-localstack-state-secret
-        required: true
-        description: A secret token for authenticating the request against the platform
+        required: false
         schema:
           type: string
       requestBody:
@@ -1695,12 +1582,7 @@ paths:
       responses:
         '200':
           content:
-            application/x-ndjson:
-              schema:
-                oneOf:
-                - $ref: '#/components/schemas/CloudPodEvent'
-                - $ref: '#/components/schemas/PodServiceEvent'
-                - $ref: '#/components/schemas/PodCompletionEvent'
+            application/x-ndjson: {}
           description: The response is a sequence of JSON events, according to the
             schema, separated by a newline
       tags:
@@ -1717,10 +1599,10 @@ paths:
         required: true
         schema:
           type: string
-      - in: header
+      - description: A secret token for authenticating the request against the platform
+        in: header
         name: x-localstack-state-secret
-        required: true
-        description: A secret token for authenticating the request against the platform
+        required: false
         schema:
           type: string
       requestBody:
@@ -1730,49 +1612,11 @@ paths:
               $ref: '#/components/schemas/RemoteConfig'
       responses:
         '200':
-          description: A list of version details.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  versions:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        created_at:
-                          type: integer
-                          description: Timestamp when the version was created.
-                        deleted:
-                          type: string
-                          nullable: true
-                          description: Deletion timestamp or null if not deleted.
-                        description:
-                          type: string
-                          nullable: true
-                          description: Description of the version.
-                        localstack_version:
-                          type: string
-                          description: Version of LocalStack used.
-                        services:
-                          type: array
-                          description: List of services associated with this version.
-                          items:
-                            type: string
-                        storage_size:
-                          type: integer
-                          description: Size of storage used by this version.
-                        user:
-                          type: string
-                          nullable: true
-                          description: User associated with this version.
-                        user_id:
-                          type: string
-                          description: ID of the user associated with this version.
-                        version:
-                          type: integer
-                          description: Version number.
+                $ref: '#/components/schemas/PodVersions'
+          description: A list of version details.
       tags:
       - pro
       - pods
@@ -1845,8 +1689,6 @@ paths:
       description: Reset all service states
       responses:
         '200':
-          content:
-            text/plain: {}
           description: Successful
       tags:
       - pro
@@ -1873,11 +1715,11 @@ paths:
         '200':
           description: Successful
         500:
-          description: Failure
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/StateResult'
+          description: Failure
       tags:
       - pro
       - state
@@ -1888,8 +1730,6 @@ paths:
       - $ref: '#/components/parameters/ServiceName'
       responses:
         '200':
-          content:
-            text/plain: {}
           description: Successful
       tags:
       - pro
@@ -1903,11 +1743,157 @@ paths:
         '200':
           description: Successful
         500:
-          description: Failure
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/StateResult'
+          description: Failure
       tags:
       - pro
       - state
+  /_localstack/usage:
+    get:
+      description: ''
+      operationId: get_usage
+      responses:
+        '200':
+          content:
+            application/json: {}
+          description: ''
+      tags:
+      - localstack
+  /_localstack/chaos/effects:
+    post:
+      summary: Configure network effects
+      description: Network effects include things like latency, jitter, bandwidth throttling etc. which do not lead to an application-level fault/exception.
+      operationId: set_network_effects
+      tags: [pro, chaos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkEffectsConfig'
+      responses:
+        200:
+          description: Successfully configured network effects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkEffectsConfig'
+    get:
+      summary: Get current network effects configuration
+      tags: [pro, chaos]
+      operationId: get_network_effects
+      description: Retrieve the current configuration for network latency effects in Localstack Chaos.
+      responses:
+        200:
+          description: Successful retrieval of configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkEffectsConfig'
+  /_localstack/chaos/faults:
+    get:
+      summary: Get the current fault configuration
+      description: Retrieve the list of currently configured fault rules.
+      operationId: get_fault_rules
+      tags: [pro, chaos]
+      responses:
+        200:
+          description: Successful retrieval of current configuration.
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of configured rules for faults.
+                uniqueItems: true
+                items:
+                  $ref: '#/components/schemas/FaultRule'
+    post:
+      summary: Set a new fault configuration
+      description: Set a new set of fault rules. Overwrite the previous ones.
+      operationId: set_fault_rules
+      tags: [pro, chaos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of rules for faults.
+              uniqueItems: true
+              items:
+                $ref: '#/components/schemas/FaultRule'
+      responses:
+        200:
+          description: Successful retrieval of current configuration.
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of configured rules for faults.
+                uniqueItems: true
+                items:
+                  $ref: '#/components/schemas/FaultRule'
+
+    patch:
+      summary: Add a new set of rules to the current configuration
+      description: Add new rules to the existing fault configuration.
+      operationId: add_fault_rules
+      tags: [pro, chaos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of configured rules for faults to be added.
+              uniqueItems: true
+              items:
+                $ref: '#/components/schemas/FaultRule'
+      responses:
+        200:
+          description: Successful retrieval of current configuration.
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of configured rules for faults.
+                uniqueItems: true
+                items:
+                  $ref: '#/components/schemas/FaultRule'
+
+    delete:
+      summary: Delete a set of rules from the configuration
+      description: Remove rules from the fault configuration.
+      operationId: delete_fault_rules
+      tags: [pro, chaos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of configured rules for faults.
+              uniqueItems: true
+              items:
+                $ref: '#/components/schemas/FaultRule'
+      responses:
+        200:
+          description: Successful retrieval of current configuration.
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of configured rules for faults.
+                uniqueItems: true
+                items:
+                  $ref: '#/components/schemas/FaultRule'
+servers:
+- url: http://{host}:{port}
+  variables:
+    host:
+      default: localhost.localstack.cloud
+    port:
+      default: '4566'

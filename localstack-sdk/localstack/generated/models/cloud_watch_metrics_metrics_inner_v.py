@@ -19,33 +19,30 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    StrictInt,
     StrictStr,
     ValidationError,
     field_validator,
 )
-from typing import Any, Dict, List, Optional
-from localstack.generated.models.remote_config_one_of import RemoteConfigOneOf
+from typing import Any, List, Optional
 from pydantic import StrictStr, Field
 from typing import Union, List, Set, Optional, Dict
 from typing_extensions import Literal, Self
 
-REMOTECONFIG_ONE_OF_SCHEMAS = ["RemoteConfigOneOf", "object"]
+CLOUDWATCHMETRICSMETRICSINNERV_ONE_OF_SCHEMAS = ["int", "str"]
 
 
-class RemoteConfig(BaseModel):
+class CloudWatchMetricsMetricsInnerV(BaseModel):
     """
-    RemoteConfig
+    Metric value
     """
 
-    # data type: object
-    oneof_schema_1_validator: Optional[Dict[str, Any]] = Field(
-        default=None,
-        description="Empty remote config. Targeting default LocalStack platform",
-    )
-    # data type: RemoteConfigOneOf
-    oneof_schema_2_validator: Optional[RemoteConfigOneOf] = None
-    actual_instance: Optional[Union[RemoteConfigOneOf, object]] = None
-    one_of_schemas: Set[str] = {"RemoteConfigOneOf", "object"}
+    # data type: str
+    oneof_schema_1_validator: Optional[StrictStr] = None
+    # data type: int
+    oneof_schema_2_validator: Optional[StrictInt] = None
+    actual_instance: Optional[Union[int, str]] = None
+    one_of_schemas: Set[str] = {"int", "str"}
 
     model_config = ConfigDict(
         validate_assignment=True,
@@ -68,32 +65,31 @@ class RemoteConfig(BaseModel):
 
     @field_validator("actual_instance")
     def actual_instance_must_validate_oneof(cls, v):
-        instance = RemoteConfig.model_construct()
+        instance = CloudWatchMetricsMetricsInnerV.model_construct()
         error_messages = []
         match = 0
-        # validate data type: object
+        # validate data type: str
         try:
             instance.oneof_schema_1_validator = v
             match += 1
         except (ValidationError, ValueError) as e:
             error_messages.append(str(e))
-        # validate data type: RemoteConfigOneOf
-        if not isinstance(v, RemoteConfigOneOf):
-            error_messages.append(
-                f"Error! Input type `{type(v)}` is not `RemoteConfigOneOf`"
-            )
-        else:
+        # validate data type: int
+        try:
+            instance.oneof_schema_2_validator = v
             match += 1
+        except (ValidationError, ValueError) as e:
+            error_messages.append(str(e))
         if match > 1:
             # more than 1 match
             raise ValueError(
-                "Multiple matches found when setting `actual_instance` in RemoteConfig with oneOf schemas: RemoteConfigOneOf, object. Details: "
+                "Multiple matches found when setting `actual_instance` in CloudWatchMetricsMetricsInnerV with oneOf schemas: int, str. Details: "
                 + ", ".join(error_messages)
             )
         elif match == 0:
             # no match
             raise ValueError(
-                "No match found when setting `actual_instance` in RemoteConfig with oneOf schemas: RemoteConfigOneOf, object. Details: "
+                "No match found when setting `actual_instance` in CloudWatchMetricsMetricsInnerV with oneOf schemas: int, str. Details: "
                 + ", ".join(error_messages)
             )
         else:
@@ -110,7 +106,7 @@ class RemoteConfig(BaseModel):
         error_messages = []
         match = 0
 
-        # deserialize data into object
+        # deserialize data into str
         try:
             # validation
             instance.oneof_schema_1_validator = json.loads(json_str)
@@ -119,9 +115,12 @@ class RemoteConfig(BaseModel):
             match += 1
         except (ValidationError, ValueError) as e:
             error_messages.append(str(e))
-        # deserialize data into RemoteConfigOneOf
+        # deserialize data into int
         try:
-            instance.actual_instance = RemoteConfigOneOf.from_json(json_str)
+            # validation
+            instance.oneof_schema_2_validator = json.loads(json_str)
+            # assign value to actual_instance
+            instance.actual_instance = instance.oneof_schema_2_validator
             match += 1
         except (ValidationError, ValueError) as e:
             error_messages.append(str(e))
@@ -129,13 +128,13 @@ class RemoteConfig(BaseModel):
         if match > 1:
             # more than 1 match
             raise ValueError(
-                "Multiple matches found when deserializing the JSON string into RemoteConfig with oneOf schemas: RemoteConfigOneOf, object. Details: "
+                "Multiple matches found when deserializing the JSON string into CloudWatchMetricsMetricsInnerV with oneOf schemas: int, str. Details: "
                 + ", ".join(error_messages)
             )
         elif match == 0:
             # no match
             raise ValueError(
-                "No match found when deserializing the JSON string into RemoteConfig with oneOf schemas: RemoteConfigOneOf, object. Details: "
+                "No match found when deserializing the JSON string into CloudWatchMetricsMetricsInnerV with oneOf schemas: int, str. Details: "
                 + ", ".join(error_messages)
             )
         else:
@@ -153,7 +152,7 @@ class RemoteConfig(BaseModel):
         else:
             return json.dumps(self.actual_instance)
 
-    def to_dict(self) -> Optional[Union[Dict[str, Any], RemoteConfigOneOf, object]]:
+    def to_dict(self) -> Optional[Union[Dict[str, Any], int, str]]:
         """Returns the dict representation of the actual instance"""
         if self.actual_instance is None:
             return None
