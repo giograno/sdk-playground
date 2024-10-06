@@ -8,3 +8,7 @@ git_push.sh
 README.md
 tox.ini
 localstack/__init__.py
+pyproject.toml
+setup.py
+setup.cfg
+test-requirements.txt

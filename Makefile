@@ -16,6 +16,7 @@ $(VENV_ACTIVATE): localstack-sdk-python/pyproject.toml
 	touch $(VENV_ACTIVATE)
 
 install: venv	#
+	$(VENV_RUN); $(PIP_CMD) install -r ./localstack-sdk-generated/requirements.txt
 	$(VENV_RUN); pip install -e ./localstack-sdk-generated
 	$(VENV_RUN); pip install -e ./localstack-sdk-python
 

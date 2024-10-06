@@ -1,5 +1,5 @@
 from localstack.clients import BaseClient
-from localstack.generated.api.chaos_api import ChaosApi
+from localstack.api.chaos_api import ChaosApi
 from localstack.models import FaultRule, NetworkEffectsConfig
 
 
