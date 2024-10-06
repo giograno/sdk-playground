@@ -31,6 +31,10 @@ jobs:
       run: |
         make install
 
+    - name: Install LocalStack
+      run: |
+        pip install --pre --upgrade localstack
+
     - name: Pull image
       run: |
         docker pull localstack/localstack-pro
