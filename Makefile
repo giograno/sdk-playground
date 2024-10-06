@@ -19,6 +19,9 @@ install: venv	#
 	$(VENV_RUN); pip install -e ./localstack-sdk-generated
 	$(VENV_RUN); pip install -e ./localstack-sdk-python
 
+install-dev: install
+	$(VENV_RUN); pip install -e ./localstack-sdk-python[test]
+
 build-spec:			## build the entire localstack api spec (openapi.yaml in the root folder)
 	$(VENV_RUN); python scripts/create_spec.py
 
