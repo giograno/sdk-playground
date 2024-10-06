@@ -10,13 +10,14 @@ PIP_CMD ?= pip
 
 venv: $(VENV_ACTIVATE)    ## Create a new (empty) virtual environment
 
-$(VENV_ACTIVATE): pyproject.toml
+$(VENV_ACTIVATE): localstack-sdk-python/pyproject.toml
 	test -d $(VENV_DIR) || $(VENV_BIN) $(VENV_DIR)
 	$(VENV_RUN); $(PIP_CMD) install --upgrade pip
 	touch $(VENV_ACTIVATE)
 
-install: venv	# todo: proper split dev deps
-	$(VENV_RUN); pip install -e .
+install: venv	#
+	$(VENV_RUN); pip install -e ./localstack-sdk-generated
+	$(VENV_RUN); pip install -e ./localstack-sdk-python
 
 build-spec:			## build the entire localstack api spec (openapi.yaml in the root folder)
 	$(VENV_RUN); python scripts/create_spec.py
@@ -25,10 +26,7 @@ clean:         	## Clean up
 	rm -rf $(VENV_DIR)
 
 clean-generated:	## Cleanup generated code
-	rm -rf localstack-sdk/localstack/generated/api/*.py
-	rm -rf localstack-sdk/localstack/generated/models/*.py
-	touch localstack-sdk/localstack/generated/api/__init__.py
-	touch localstack-sdk/localstack/generated/models/__init__.py
+	rm -rf localstack-sdk-generated/localstack/generated
 
 format:            		  ## Run ruff to format the whole codebase
 	($(VENV_RUN); python -m ruff format .; python -m ruff check --output-format=full --exclude localstack-sdk/localstack/generated --fix .)
