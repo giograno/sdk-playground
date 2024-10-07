@@ -1,9 +1,10 @@
+import localstack.chaos
+from localstack.chaos.managers import fault_configuration
 from localstack.models import FaultRule
-from localstack.chaos.client import Client
 
 
 class TestLocalStackClient:
-    client = Client()
+    client = localstack.chaos.ChaosClient()
 
     def test_rules_crud(self):
         rule_one = FaultRule(region="us-east-1", service="s3")
@@ -27,3 +28,9 @@ class TestLocalStackClient:
 
         rules = self.client.set_fault_rules(fault_rules=[])
         assert not rules
+
+    def test_context_manager(self):
+        rules = [FaultRule(region="us-east-1", service="s3")]
+        with fault_configuration(fault_rules=rules):
+            assert self.client.get_fault_rules() == rules
+        assert not self.client.get_fault_rules()
