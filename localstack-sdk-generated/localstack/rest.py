@@ -250,7 +250,7 @@ class RESTClientObject:
                 r = self.pool_manager.request(
                     method,
                     url,
-                    body=request_body
+                    body=request_body,
                     fields={},
                     timeout=timeout,
                     headers=headers,
