@@ -49,7 +49,7 @@ jobs:
 
     - name: Run Python Tests
       env:
-        LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN
+        LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
       run: |
         make test
 
