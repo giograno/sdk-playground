@@ -48,6 +48,8 @@ jobs:
           localstack wait -t 120 || (python -m localstack.cli.main logs && false)
 
     - name: Run Python Tests
+      env:
+        LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN
       run: |
         make test
 
